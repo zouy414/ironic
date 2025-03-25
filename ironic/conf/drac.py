@@ -49,8 +49,10 @@ opts = [
                default=300,
                min=1,
                help=_('Maximum time (in seconds) to wait for RAID job to '
-                      'complete'))
-
+                      'complete')),
+    cfg.StrOpt('verify_ca',
+               default='',
+               help=_('The default verify_ca path.')),
 ]
 
 
