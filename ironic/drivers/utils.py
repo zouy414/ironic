@@ -541,3 +541,17 @@ def power_off_and_on(task):
     next_state = (states.REBOOT if task.node.disable_power_off
                   else states.POWER_ON)
     utils.node_power_action(task, next_state)
+
+
+def parse_driver_verify_ca(func):
+    def wrapper(node):
+        if node.driver_info.get(f'{node.driver}_verify_ca') == False:
+            return func(node)
+
+        if len(CONF.get(node.driver, {}).get('verify_ca', '')) == 0:
+            return func(node)
+
+        node.driver_info[f'{node.driver}_verify_ca'] = CONF.get(
+            node.driver).get('verify_ca')
+        return func(node)
+    return wrapper
