@@ -30,6 +30,7 @@ from ironic.common import exception
 from ironic.common.i18n import _
 from ironic.common import utils
 from ironic.conf import CONF
+from ironic.drivers.utils import parse_driver_verify_ca
 
 LOG = log.getLogger(__name__)
 
@@ -89,6 +90,7 @@ FIRMWARE_COMPONENTS = [BIOS, BMC]
 """Firmware Components available to update"""
 
 
+@parse_driver_verify_ca
 def parse_driver_info(node):
     """Parse the information required for Ironic to connect to Redfish.
 

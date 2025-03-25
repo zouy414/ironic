@@ -541,3 +541,25 @@ def power_off_and_on(task):
     next_state = (states.REBOOT if task.node.disable_power_off
                   else states.POWER_ON)
     utils.node_power_action(task, next_state)
+
+
+def parse_driver_verify_ca(func):
+    def wrapper(node):
+        config_group = node.driver
+        driver_info_key = f'{node.driver}_verify_ca'
+
+        if node.driver == 'idrac':
+            config_group = 'drac'
+            driver_info_key = 'redfish_verify_ca'
+
+        if node.driver_info.get(driver_info_key) is not None \
+                and node.driver_info.get(driver_info_key) is not True:
+            return func(node)
+
+        if len(CONF.get(config_group, {}).get('verify_ca', '')) == 0:
+            return func(node)
+
+        node.driver_info[driver_info_key] = CONF.get(
+            config_group).get('verify_ca')
+        return func(node)
+    return wrapper

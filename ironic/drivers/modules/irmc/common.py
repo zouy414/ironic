@@ -29,6 +29,7 @@ from ironic.common.i18n import _
 from ironic.common import utils
 from ironic.conf import CONF
 from ironic.drivers.modules import snmp
+from ironic.drivers.utils import parse_driver_verify_ca
 
 scci = importutils.try_import('scciclient.irmc.scci')
 elcm = importutils.try_import('scciclient.irmc.elcm')
@@ -132,6 +133,7 @@ COMMON_PROPERTIES.update(SNMP_V3_OPTIONAL_PROPERTIES)
 COMMON_PROPERTIES.update(SNMP_V3_DEPRECATED_PROPERTIES)
 
 
+@parse_driver_verify_ca
 def parse_driver_info(node):
     """Gets the specific Node driver info.
 
