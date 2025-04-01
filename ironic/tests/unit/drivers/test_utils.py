@@ -408,3 +408,71 @@ class MixinVendorInterfaceTestCase(db_base.DbTestCase):
             self.assertRaises(exception.InvalidParameterValue,
                               self.vendor.validate,
                               task, method='fake_method')
+
+
+@driver_utils.parse_driver_verify_ca
+def mock_parse_driver_info(node):
+    return node.driver_info
+
+
+class ParseDriverVerifyCATestCase(tests_base.TestCase):
+
+    def setUp(self):
+        super(ParseDriverVerifyCATestCase, self).setUp()
+        self.node = obj_utils.get_test_node(self.context)
+
+    def test_parse_driver_verify_ca(self):
+        for case in [
+            {
+                'driver': 'idrac',
+                'config_group': 'drac',
+                'driver_info_key': 'redfish_verify_ca',
+            },
+            {
+                'driver': 'irmc',
+                'config_group': 'irmc',
+                'driver_info_key': 'irmc_verify_ca',
+            },
+            {
+                'driver': 'redfish',
+                'config_group': 'redfish',
+                'driver_info_key': 'redfish_verify_ca',
+            },
+        ]:
+            driver_info_key = case['driver_info_key']
+            self.node.driver = case['driver']
+
+            self.node.driver_info[driver_info_key] = True
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], True)
+
+            self.node.driver_info[driver_info_key] = False
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], False)
+
+            self.node.driver_info[driver_info_key] = None
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertIsNone(driver_info[driver_info_key])
+
+            self.node.driver_info[driver_info_key] = 'rootca.crt'
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], 'rootca.crt')
+
+            cfg.CONF.set_override(
+                'verify_ca', 'default.crt', case['config_group'])
+
+            self.node.driver_info[driver_info_key] = True
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], 'default.crt')
+
+            self.node.driver_info[driver_info_key] = False
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], False)
+
+            self.node.driver_info[driver_info_key] = None
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], 'default.crt')
+
+            self.node.driver_info[driver_info_key] = 'rootca.crt'
+            driver_info = mock_parse_driver_info(self.node)
+            self.assertEqual(driver_info[driver_info_key], 'rootca.crt')
